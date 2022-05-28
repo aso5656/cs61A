@@ -47,7 +47,7 @@ def closer_city(lat, lon, city_a, city_b):
     'Bucharest'
     """
     "*** YOUR CODE HERE ***"
-    city = make_city('_',lat,lon)
+    city = make_city('the_city',lat,lon)
 
     return get_name(city_a) if distance(city,city_a) < distance(city,city_b) else get_name(city_b)
 
@@ -203,7 +203,7 @@ def sprout_leaves(t, leaves):
         #if leaf, return a tree with branch
         return tree(label(t),leaves_brach)
     else:
-        #if not leaf, loop each branch to see if leaf
+        #if not leaf, loop each branch to see if leaf 
         return tree(label(t),[sprout_leaves(branch,leaves) for branch in branches(t)])
 
 
@@ -328,8 +328,8 @@ def add_trees(t1, t2):
 
     else:
         len_diff = len(branches(t2)) - len(branches(t1))
-        bc_1 = branches(t1)
-        bc_2 = branches(t2)
+        bc_1 = branches(t1) 
+        bc_2 = branches(t2) 
 
         #fill shorter branches with tree(0)
         if len_diff>0:
