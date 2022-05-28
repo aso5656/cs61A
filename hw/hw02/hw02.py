@@ -155,16 +155,16 @@ def count_coins(total):
     True
     """
     "*** YOUR CODE HERE ***"
-    def func(remainder,coin):
+    def helper(remainder,coin):
             if not(coin) or remainder == 0 or remainder<coin :
                 return 0
             elif remainder ==1 or remainder == coin:
                 return 1
 
             else:
-                return func(remainder-coin,coin) + func(remainder,next_largest_coin(coin))
+                return helper(remainder-coin,coin) + helper(remainder,next_largest_coin(coin))
     
-    return func(total,1)
+    return helper(total,1)
 
 
 from operator import sub, mul
