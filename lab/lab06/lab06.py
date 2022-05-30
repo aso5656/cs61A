@@ -52,7 +52,7 @@ def make_fib():
     >>> check(this_file, 'make_fib', ['List'])
     True
     """
-    "*** YOUR CODE HERE ***"
+    
     prev2,prev=0,1
 
     def fib():
