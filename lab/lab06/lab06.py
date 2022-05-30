@@ -80,7 +80,7 @@ def insert_items(lst, entry, elem):
     >>> large_lst3 is large_lst
     True
     """
-    "*** YOUR CODE HERE ***"
+   #sdfsdfsd
     index_lst = []
     for i in range(len(lst)):
         if lst[i]==entry:
