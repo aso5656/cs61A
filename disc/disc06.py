@@ -47,6 +47,7 @@ def add_this_many(x, el, s):
     # >>> s
     # [1, 2, 4, 2, 1, 5, 5, 2, 2]
     """
+
     x_occur = len(list(filter(lambda i:i==x,s)))
     
     s.extend([el for _ in range(x_occur)])
