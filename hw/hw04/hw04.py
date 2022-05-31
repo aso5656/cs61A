@@ -19,7 +19,7 @@ def make_bank(balance):
     120
     """
     def bank(message, amount):
-        "*** YOUR CODE HERE ***"
+        
         nonlocal balance
         valid_messages = ['withdraw', 'deposit']
         if message in valid_messages:
@@ -118,7 +118,6 @@ def repeated(t, k):
             return r0[0]
         #next value in t
         r1 = next(t)
-
         if r1 == r0[0]:
             r0.append(r1)
         else:
