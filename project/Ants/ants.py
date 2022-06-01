@@ -2,7 +2,7 @@
 
 import random
 
-from numpy import place
+from numpy import block, place
 from ucb import main, interact, trace
 from collections import OrderedDict
 
@@ -110,6 +110,7 @@ class Ant(Insect):
     food_cost = 0
 
     # ADD CLASS ATTRIBUTES HERE
+    blocks_path = True
 
     def __init__(self, armor=1):
         """Create an Ant with an ARMOR quantity."""
@@ -129,8 +130,20 @@ class Ant(Insect):
             place.ant = self
         else:
             # BEGIN Problem Optional 2
-            assert place.ant is None, 'Two ants in {0}'.format(place)
+            ants = [self,place.ant]
+            if ants[0].can_contain(ants[1]) or ants[1].can_contain(ants[0]):
+                for i in [0,1]:
+                    ant = ants[i]
+                    the_other_ant = ants[1-i]
+                    if ant.can_contain(the_other_ant):
+                        ant.contain_ant(the_other_ant)
+                        #container ant takes the place
+                        place.ant = ant
+                        break
+            else:
+                assert place.ant is None, 'Two ants in {0}'.format(place)
             # END Problem Optional 2
+        
         Insect.add_to(self, place)
 
     def remove_from(self, place):
@@ -462,7 +475,9 @@ class Bee(Insect):
         """Return True if this Bee cannot advance to the next Place."""
         # Special handling for NinjaAnt
         # BEGIN Problem Optional
-        return self.place.ant is not None
+        ant = self.place.ant
+        return ant.blocks_path if ant else False
+        
         # END Problem Optional
 
     def action(self, gamestate):
@@ -471,10 +486,12 @@ class Bee(Insect):
 
         gamestate -- The GameState, used to access game state information.
         """
-        destination = self.place.exit
+        destination = self.place.exit 
         # Extra credit: Special handling for bee direction
         # BEGIN EC
-        "*** YOUR CODE HERE ***"
+        if hasattr(self,'forward'): 
+            if not self.forward:
+                destination = self.place.entrance
         # END EC
         if self.blocked():
             self.sting(self.place.ant)
@@ -504,14 +521,20 @@ class NinjaAnt(Ant):
     damage = 1
     food_cost = 5
     # OVERRIDE CLASS ATTRIBUTES HERE
+    blocks_path = False
     # BEGIN Problem Optional 1
-    implemented = False  # Change to True to view in the GUI
+    implemented = True  # Change to True to view in the GUI
 
     # END Problem Optional 1
 
     def action(self, gamestate):
         # BEGIN Problem Optional 1
         "*** YOUR CODE HERE ***"
+        bees = self.place.bees[:]
+        if bees:
+            for bee in bees:
+                bee.reduce_armor(self.damage)
+
         # END Problem Optional 1
 
 
@@ -522,12 +545,12 @@ class ContainerAnt(Ant):
 
     def can_contain(self, other):
         # BEGIN Problem Optional 2
-        "*** YOUR CODE HERE ***"
+        return self.contained_ant is None and isinstance(other,ContainerAnt) == False
         # END Problem Optional 2
 
     def contain_ant(self, ant):
         # BEGIN Problem Optional 2
-        "*** YOUR CODE HERE ***"
+        self.contained_ant = ant
         # END Problem Optional 2
 
     def remove_ant(self, ant):
@@ -547,7 +570,8 @@ class ContainerAnt(Ant):
 
     def action(self, gamestate):
         # BEGIN Optional 2
-        "*** YOUR CODE HERE ***"
+        if self.contained_ant:
+            self.contained_ant.action(gamestate)
         # END Optional 2
 
 
@@ -558,7 +582,10 @@ class BodyguardAnt(ContainerAnt):
     food_cost = 4
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Optional 2
-    implemented = False  # Change to True to view in the GUI
+    implemented = True  # Change to True to view in the GUI
+    def __init__(self, armor=2):
+        super().__init__(armor)
+
     # END Optional 2
 
 
@@ -570,7 +597,7 @@ class TankAnt(ContainerAnt):
     food_cost = 6
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem Optional 3
-    implemented = False  # Change to True to view in the GUI
+    implemented = True  # Change to True to view in the GUI
 
     # END Problem Optional 3
 
@@ -579,7 +606,11 @@ class TankAnt(ContainerAnt):
 
     def action(self, gamestate):
         # BEGIN Problem Optional 3
-        "*** YOUR CODE HERE ***"
+        bees = self.place.bees[:]
+        if bees:
+            for bee in bees:
+                bee.reduce_armor(self.damage)
+        super().action(gamestate)
         # END Problem Optional 3
 
 
@@ -592,9 +623,16 @@ def make_slow(action, bee):
     """Return a new action method that calls ACTION every other turn.
 
     action -- An action method of some Bee
+    returns a new action method that 
+    performs the original action on every turn that gamestate.time is even
     """
     # BEGIN Problem Optional 4
-    "*** YOUR CODE HERE ***"
+    def new_action(gamestate):
+        if gamestate.time %2==0:
+            
+            action(gamestate)
+    return new_action
+
     # END Problem Optional 4
 
 
@@ -604,14 +642,36 @@ def make_scare(action, bee):
     action -- An action method of some Bee
     """
     # BEGIN Problem Optional 4
-    "*** YOUR CODE HERE ***"
+    def new_action(gamestate):
+        #set a new attr for scared bee
+        bee.forward = False
+        #continue bee action
+        action(gamestate)
+    return new_action
+    
     # END Problem Optional 4
 
 
 def apply_status(status, bee, length):
     """Apply a status to a BEE that lasts for LENGTH turns."""
     # BEGIN Problem Optional 4
-    "*** YOUR CODE HERE ***"
+    old_action = bee.action
+    new_action = status(bee.action,bee)
+    
+    def new_action_with_counter(gamestate):
+        nonlocal length
+        print("DEBUG:",length)
+        if length <= 0:
+            if status == make_scare:
+                bee.forward= True
+            old_action(gamestate)
+        else:
+            new_action(gamestate)
+            length-=1
+        
+    
+    bee.action = new_action_with_counter
+
     # END Problem Optional 4
 
 
@@ -621,7 +681,7 @@ class SlowThrower(ThrowerAnt):
     name = 'Slow'
     food_cost = 4
     # BEGIN Problem Optional 4
-    implemented = False  # Change to True to view in the GUI
+    implemented = True  # Change to True to view in the GUI
 
     # END Problem Optional 4
 
@@ -636,13 +696,16 @@ class ScaryThrower(ThrowerAnt):
     name = 'Scary'
     food_cost = 6
     # BEGIN Problem Optional 4
-    implemented = False  # Change to True to view in the GUI
+    implemented = True  # Change to True to view in the GUI
 
     # END Problem Optional 4
 
     def throw_at(self, target):
         # BEGIN Problem Optional 4
-        "*** YOUR CODE HERE ***"
+        if target is None or hasattr(self,'forward'):
+            return 
+        else:
+            apply_status(make_scare, target, 2)
         # END Problem Optional 4
 
 
@@ -651,9 +714,9 @@ class LaserAnt(ThrowerAnt):
 
     name = 'Laser'
     food_cost = 10
-    # OVERRIDE CLASS ATTRIBUTES HERE
+    damage = 2
     # BEGIN Problem Optional 5
-    implemented = False  # Change to True to view in the GUI
+    implemented = True  # Change to True to view in the GUI
 
     # END Problem Optional 5
 
@@ -663,18 +726,33 @@ class LaserAnt(ThrowerAnt):
 
     def insects_in_front(self, beehive):
         # BEGIN Problem Optional 5
-        return {}
+        result = {}
+        place = self.place
+        distance = 0
+        while place:
+            if place.ant and place.ant is not self:
+                result[place.ant] = distance
+            if place.bees:
+                for bee in place.bees:
+                    result[bee] = distance
+            place = place.entrance
+            distance += 1
+        return result
         # END Problem Optional 5
 
     def calculate_damage(self, distance):
         # BEGIN Problem Optional 5
-        return 0
+        damage = LaserAnt.damage - 0.2*distance - 0.05*self.insects_shot
+        print("DEBUG:",damage)
+        return damage  if damage  > 0 else 0
         # END Problem Optional 5
 
     def action(self, gamestate):
         insects_and_distances = self.insects_in_front(gamestate.beehive)
+        
         for insect, distance in insects_and_distances.items():
             damage = self.calculate_damage(distance)
+            
             insect.reduce_armor(damage)
             if damage:
                 self.insects_shot += 1
