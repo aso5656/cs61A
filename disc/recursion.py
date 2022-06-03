@@ -93,3 +93,9 @@ def add_char(w1,w2):
         return add_char(w1[1:],w2[1:])
     else:
         return w2[0]+add_char(w1,w2[1:])
+
+def max_product(s):
+	if not s:
+		return 1
+	else:
+		return max(s[0]*max_product(s[2:]),max_product(s[1:]))
