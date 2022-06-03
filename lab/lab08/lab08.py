@@ -8,6 +8,11 @@ def convert_link(link):
     []
     """
     "*** YOUR CODE HERE ***"
+    if link is Link.empty:
+        return []
+
+    else:
+        return [link.first] + convert_link(link.rest)
 
 
 def every_other(s):
@@ -28,6 +33,13 @@ def every_other(s):
     Link(4)
     """
     "*** YOUR CODE HERE ***"
+    while s.rest is not Link.empty:
+        s.rest = s.rest.rest #remove second element
+        s = s.rest #start from next odd
+        if s is Link.empty:
+            break
+        
+        
 
 
 def cumulative_mul(t):
@@ -39,8 +51,14 @@ def cumulative_mul(t):
     >>> t
     Tree(105, [Tree(15, [Tree(5)]), Tree(7)])
     """
-    "*** YOUR CODE HERE ***"
-
+    new_label = t.label
+    for branch in t.branches:
+        cumulative_mul(branch)
+        new_label *= branch.label
+    t.label = new_label 
+                    
+    
+        
 
 def has_cycle(link):
     """Return whether link contains a cycle.
@@ -57,7 +75,14 @@ def has_cycle(link):
     False
     """
     "*** YOUR CODE HERE ***"
-
+    #print(link)
+    links = []
+    while link is not Link.empty:
+        if link in links:
+            return True
+        links.append(link)
+        link = link.rest
+    return False
 def has_cycle_constant(link):
     """Return whether link contains a cycle.
 
@@ -70,7 +95,19 @@ def has_cycle_constant(link):
     False
     """
     "*** YOUR CODE HERE ***"
-
+    if link is Link.empty:
+        return False
+    else:
+        slow = link
+        fast = link.rest
+        while fast is not Link.empty:
+            if fast.rest is Link.empty:
+                return False
+            slow = slow.rest
+            fast = fast.rest.rest
+            if slow is fast:
+                return True
+        return False
 
 def reverse_other(t):
     """Mutates the tree such that nodes on every other (odd-depth) level
@@ -86,6 +123,21 @@ def reverse_other(t):
     Tree(1, [Tree(8, [Tree(3, [Tree(5), Tree(4)]), Tree(6, [Tree(7)])]), Tree(2)])
     """
     "*** YOUR CODE HERE ***"
+
+    def reverse(t,n):
+        if t.is_leaf():
+            return
+        else:
+            if n:
+                labels = [branch.label for branch in t.branches][::-1]
+                for branch in t.branches:
+                    reverse(branch,not n)
+
+
+
+
+
+    return reverse(t,True)
 
 
 class Link:
