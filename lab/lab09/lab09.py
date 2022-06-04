@@ -7,7 +7,7 @@ def insert_into_all(item, nested_list):
     >>> insert_into_all(0, nl)
     [[0], [0, 1, 2], [0, 3]]
     """
-    return ______________________________
+    return [[item]+li for li in nested_list]
 
 def subseqs(s):
     """Assuming that S is a list, return a nested list of all subsequences
@@ -19,11 +19,10 @@ def subseqs(s):
     >>> subseqs([])
     [[]]
     """
-    if ________________:
-        ________________
+    if len(s)<=1:
+        return [[],s] if s else [[]] 
     else:
-        ________________
-        ________________
+        return insert_into_all(s[0], subseqs(s[1:])) + subseqs(s[1:])
 
 
 def inc_subseqs(s):
@@ -42,14 +41,15 @@ def inc_subseqs(s):
     """
     def subseq_helper(s, prev):
         if not s:
-            return ____________________
+            return [s]
         elif s[0] < prev:
-            return ____________________
+            return subseq_helper(s[1:],prev)
         else:
-            a = ______________________
-            b = ______________________
-            return insert_into_all(________, ______________) + ________________
-    return subseq_helper(____, ____)
+            a = subseq_helper(s[1:],s[0])
+            b = subseq_helper(s[1:],prev)
+            return insert_into_all(s[0],a) + b
+
+    return subseq_helper(s,0)
 
 
 def num_trees(n):
@@ -250,9 +250,9 @@ def trade(first, second):
     """
     m, n = 1, 1
 
-    equal_prefix = lambda: ______________________
-    while _______________________________:
-        if __________________:
+    equal_prefix = lambda: sum(first[:m])==sum(second[:n])
+    while not equal_prefix() and m<=len(first) and n<=len(second):
+        if sum(first[:m])<sum(second[:n]):
             m += 1
         else:
             n += 1
@@ -289,11 +289,11 @@ def shuffle(cards):
     ['A♡', 'A♢', 'A♤', 'A♧', '2♡', '2♢', '2♤', '2♧', '3♡', '3♢', '3♤', '3♧']
     """
     assert len(cards) % 2 == 0, 'len(cards) must be even'
-    half = _______________
+    half = cards[len(cards)//2 :]
     shuffled = []
-    for i in _____________:
-        _________________
-        _________________
+    for i in range(len(cards)):
+        c = cards[i] if i%2==0 else half[(i-1)//2]
+        shuffled.append(c)
     return shuffled
 
 
@@ -312,14 +312,13 @@ def insert(link, value, index):
     >>> insert(link, 4, 5)
     IndexError
     """
-    if ____________________:
-        ____________________
-        ____________________
-        ____________________
-    elif ____________________:
-        ____________________
+    if index==0:
+        link.rest = Link(link.first,link.rest)
+        link.first = value
+    elif link.rest is Link.empty:
+        raise IndexError
     else:
-        ____________________
+        insert(link.rest,value,index-1)
 
 
 
@@ -385,11 +384,11 @@ def prune_small(t, n):
     >>> t3
     Tree(6, [Tree(1), Tree(3, [Tree(1), Tree(2)])])
     """
-    while ___________________________:
-        largest = max(_______________, key=____________________)
-        _________________________
-    for __ in _____________:
-        ___________________
+    while len(t.branches) > n:
+        largest = max(t.branches, key=lambda branch:branch.label)
+        t.branches.remove(largest)
+    for branch in t.branches:
+        prune_small(branch,n)
 
 
 class Link:
