@@ -1,3 +1,5 @@
 'inc_subseqs-correct', (0, 70)
 'insert-correct', (512, 70)
 'prune_small-correct', (1024, 70)
+'make_to_string-correct', (1536, 70)
+'Keyboard-correct', (2048, 70)

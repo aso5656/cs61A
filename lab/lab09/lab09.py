@@ -159,26 +159,26 @@ class Keyboard:
     """
 
     def __init__(self, *args):
-        ________________
-        for _________ in ________________:
-            ________________
+        self.buttons = {} 
+        for b in args:
+            self.buttons[b.pos] = b
 
     def press(self, info):
         """Takes in a position of the button pressed, and
         returns that button's output"""
-        if ____________________:
-            ________________
-            ________________
-            ________________
-        ________________
+        if info in self.buttons:
+            b = self.buttons[info]
+            b.times_pressed +=1
+            return b.key
+        return ""
 
     def typing(self, typing_input):
         """Takes in a list of positions of buttons pressed, and
         returns the total output"""
-        ________________
-        for ________ in ____________________:
-            ________________
-        ________________
+        output=""
+        for i in typing_input:
+            output+=self.press(i)
+        return output
 
 
 def make_advanced_counter_maker():
@@ -336,12 +336,12 @@ def deep_len(lnk):
     >>> deep_len(levels)
     5
     """
-    if ______________:
+    if lnk is Link.empty:
         return 0
-    elif ______________:
+    elif not isinstance(lnk, Link):
         return 1
     else:
-        return _________________________
+        return deep_len(lnk.first) + deep_len(lnk.rest)
 
 
 def make_to_string(front, mid, back, empty_repr):
@@ -360,10 +360,10 @@ def make_to_string(front, mid, back, empty_repr):
     '()'
     """
     def printer(lnk):
-        if ______________:
-            return _________________________
+        if lnk is Link.empty:
+            return empty_repr
         else:
-            return _________________________
+            return front + str(lnk.first) + mid +printer(lnk.rest) + back
     return printer
 
 
